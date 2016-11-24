@@ -125,6 +125,20 @@ CloudFormation is pretty well covered by [AWS Advent](awsadvent.tumblr.com), we'
     1. Note your topic ARN
            arn:aws:sns:us-west-2:488887740717:awsadvent
 
+    1. Go back and twiddle the IAM permissions on the role for the first lambda
+
+             ```
+{
+   "Version":"2012-10-17",
+   "Statement":[{
+      "Effect":"Allow",
+      "Action":"sns:Publish",
+      "Resource":"arn:aws:sns:*:*:awsadvent"
+      }
+   ]
+}
+     ```
+
 1. Make the multiplier lambda
     1. Console
     1. lambda
@@ -152,72 +166,3 @@ CloudFormation is pretty well covered by [AWS Advent](awsadvent.tumblr.com), we'
     1. Next
     1. Create Function
 
-
-1. API Gateway to SNS Topic ( IAM )
-    1. First setup an IAM Role named `aws_advent_apigw_sns` that can do SNS Publish, apigateway assumed entity
-          1. Amazon EC2
-          1. Select No policy
-          1. Come back to the role
-          1. Inline Policy
-          1. Custom Policy
-          1. Policy Name `aws_advent_apigw_sns`
-             
-             ```
-{
-   "Version":"2012-10-17",
-   "Statement":[{
-      "Effect":"Allow",
-      "Action":"sns:Publish",
-      "Resource":"arn:aws:sns:*:*:aws-advent"
-      }
-   ]
-}
-     ```
-          1. Trust Relationships (tab)
-          1. Edit Trust Relationship
-          1. change the Principal to `apigateway.amazonaws.com`
-              * This allows the apigateway to assume this IAM Role
-          1. note the role ARN
-    arn:aws:iam::488887740717:role/aws_advent_apigw_sns
-    ## XXX ED WAS HERE
-
-    1. First setup an IAM Role named `aws_advent_apigw_sns` that can do SNS Publish, apigateway assumed entity
-
-1. API Gateway to SNS Topic ( APIGateway )
-
-#####
-
-
-1. Make the multiplier SQS Queue
-    1. Console
-    1. SQS
-    1. New Queue
-    1. Name `aws-advent-multiplier`
-    1. Queue Type `Standard`
-
-1. Make the logger SQS Queue
-    1. Console
-    1. SQS
-    1. New Queue
-    1. Name `aws-advent-logger`
-    1. Queue Type `Standard`
-
-1. Subscribe both queues to the SNS Topic
-    1. Console
-    1. SQS
-    1. Select both queues
-
-    1. api gateway 
-          1. new
-          1. method `POST`
-          1. Integration `AWS Service`
-          1. Region `us-west-2`
-          1. Service `SNS`
-          1. HTTP MEthod `POST` -> Actually method on the AWS API
-          1. Action Type `Use path override`
-       
-
-
-* To Publish: we'll take HTTP POST bodies ( from a slack outbound webhook ) , and put them as messages into a SNS topic via the API Gateway
-* To Subscribe: We'll subscribe a lambda to the SNS Topic and log the message body
-* To Subscribe: We'll subscribe a SQS 
