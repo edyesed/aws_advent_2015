@@ -38,8 +38,7 @@ def handler(event, context):
                                })
                 }
 
-    clieient = boto3.client('dynamodb')
-    return_response = {}t = boto3.client('dynamodb')
+    client = boto3.client('dynamodb')
     return_response = {}
     # now we save into redis ( or update if it already exists )
     for word in input_text[0].split():
