@@ -168,8 +168,7 @@ This permission will allow the first lambda to talk to the SNS Topic. You also n
       }
    ]
 }
-
-```
+         ```
 
 
 
