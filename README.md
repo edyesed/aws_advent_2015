@@ -65,9 +65,10 @@ CloudFormation is pretty well covered by [AWS Advent](http://awsadvent.tumblr.co
 This lambda accepts the input from a slack outgoing webhook, splits the input into separate words, and adds a count of one to each word. It further returns a json response body to the outgoing webhook that displays a message in slack. 
 
 If the lambda is triggered with the input `awsadvent some words`, this lambda will create the following three keys in dynamodb, and give each the value of one.
-     * **awsadvent** = **1**
-     * **some** = **1**
-     * **words** = **1**
+
+ * **awsadvent** = **1**
+ * **some** = **1**
+ * **words** = **1**
 
 👇 You can follow the steps below, or view  this video 👉 [![Video to Create the first Lambda](https://img.youtube.com/vi/7gkmqYd6v8w/1.jpg)](https://youtu.be/7gkmqYd6v8w "Make The First Lambda to accept outgoing slack webhooks")
 
@@ -137,6 +138,7 @@ If the lambda is triggered with the input `awsadvent some words`, this lambda wi
 We're using a SNS Topic as a broker. The **producer** ( the `aws_advent` lambda ) publishes messages to the SNS Topic.  Two other lambdas will be **consumers** of the SNS Topic, and they'll get triggered as new messages come into the Topic.
 
 👇 You can follow the steps below, or view  this video 👉 [![Video for setting up the SNS Topic](https://img.youtube.com/vi/ZB2Y-fEIYJ0/1.jpg)](https://youtu.be/ZB2Y-fEIYJ0 "Setup the SNS Topic")
+
 1. Console
 1. SNS
 1. New Topic
@@ -148,6 +150,7 @@ We're using a SNS Topic as a broker. The **producer** ( the `aws_advent` lambda 
 This permission will allow the first lambda to talk to the SNS Topic. You also need to set an environment variable on the `aws_advent` lambda to have it be able to talk to the SNS Topic. 
 
 👇 You can follow the steps below, or view  this video 👉 [![Adding additional IAM Permissions to the aws_lambda role](https://img.youtube.com/vi/b9cXoz6e8zA/1.jpg)](https://youtu.be/b9cXoz6e8zA "Setup the SNS Topic")
+
 1. Give additional IAM permissions on the role for the first lambda
      1. Console
      1. IAM
@@ -233,7 +236,7 @@ What we'd expect to happen is pictured here 👉 ![everything working](img/AWSAD
      2. The second invocation set the count of each word to `current(11) + 1`.  The value of each word in the database was set to 12.
 
 
-## Now you're doing pubsub microservices
+# ️️💯💯💯 Now you're doing pubsub microservices 💯💯💯
 ### Setup the logger lambda as well
 This output of this lambda will be viewable in the CloudWatch Logs console, and it's only showing that we could do something else ( anything else, even ) with this microservice implementation.
 
