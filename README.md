@@ -50,7 +50,9 @@ CloudFormation is pretty well covered by [AWS Advent](http://awsadvent.tumblr.co
 # TO THE ~~BAT~~CODE CAVE! 
 ## Setup the first lambda, which will be linked to an outgoing webhook in slack
 ### Setup the DynamoDB 
-1. [![Video to DynamoDB Create](https://img.youtube.com/vi/ww3aSExgkRM/1.jpg)](https://youtu.be/ww3aSExgkRM "Make a DynamoDB")
+
+👇 You can follow the steps below, or view  this video 👉 [![Video to DynamoDB Create](https://img.youtube.com/vi/ww3aSExgkRM/1.jpg)](https://youtu.be/ww3aSExgkRM "Make a DynamoDB")
+
 1. Console  
 1. DynamoDB
 1. Create Table
@@ -58,7 +60,17 @@ CloudFormation is pretty well covered by [AWS Advent](http://awsadvent.tumblr.co
     1. Primary Key `word`
     1. `Create`
 
-### Setup the First Lambda [![Video to Create the first Lambda](https://img.youtube.com/vi/7gkmqYd6v8w/1.jpg)](https://youtu.be/7gkmqYd6v8w "Make The First Lambda to accept outgoing slack webhooks")
+### Setup the First Lambda 
+
+This lambda accepts the input from a slack outgoing webhook, splits the input into separate words, and adds a count of one to each word. It further returns a json response body to the outgoing webhook that displays a message in slack. 
+
+If the lambda is triggered with the input `awsadvent some words`, this lambda will create the following three keys in dynamodb, and give each the value of one.
+     * **awsadvent** = **1**
+     * **some** = **1**
+     * **words** = **1**
+
+👇 You can follow the steps below, or view  this video 👉 [![Video to Create the first Lambda](https://img.youtube.com/vi/7gkmqYd6v8w/1.jpg)](https://youtu.be/7gkmqYd6v8w "Make The First Lambda to accept outgoing slack webhooks")
+
 1. Make the first lambda, which accepts slack outgoing webook input, and saves that in DynamoDB
     1. Console
     1. lambda
@@ -85,6 +97,8 @@ CloudFormation is pretty well covered by [AWS Advent](http://awsadvent.tumblr.co
         1. `app.handler`
     1. Role
         1. Create new role from template(s)
+        1. Name
+            1. `aws_advent_lambda_dynamo`
     1. Policy Templates
         1. Simple Microservice permissions
     1. Triggers
@@ -92,7 +106,9 @@ CloudFormation is pretty well covered by [AWS Advent](http://awsadvent.tumblr.co
         1. **save the URL**
 
         
-### Link it to your favorite slack [![Video for setting up the slack outbound wehbook](https://img.youtube.com/vi/fnt78n2tvak/1.jpg)](https://youtu.be/fnt78n2tvak "Setup the slack outgoing webhook")
+### Link it to your favorite slack 
+
+👇 You can follow the steps below, or view  this video 👉 [![Video for setting up the slack outbound wehbook](https://img.youtube.com/vi/fnt78n2tvak/1.jpg)](https://youtu.be/fnt78n2tvak "Setup the slack outgoing webhook")
 1. Setup an outbound webhook in your favorite slack team.
     1. Manage
     1. search
@@ -108,7 +124,7 @@ CloudFormation is pretty well covered by [AWS Advent](http://awsadvent.tumblr.co
 1. Go to slack
      1. join the room
      1. say the trigger word
-     1. You should see ![something like this](https://github.com/edyesed/aws_advent_2016/raw/master/img/AWS_Advent_Diagram.png "First post of the awsadvent bot")
+     1. You should see something like 👉 ![something like this](img/AWSADVENT_BOT_firstpost.png "First post of the awsadvent bot")
 
 
 ## ☝️☝️ CONGRATS YOU JUST DID CHATOPS ☝️☝️
@@ -117,18 +133,30 @@ CloudFormation is pretty well covered by [AWS Advent](http://awsadvent.tumblr.co
 
 
 # Ok. now we want to do the awesome pubsub stuff
-## Make the SNS Topic
+### Make the SNS Topic
+We're using a SNS Topic as a broker. The **producer** ( the `aws_advent` lambda ) publishes messages to the SNS Topic.  Two other lambdas will be **consumers** of the SNS Topic, and they'll get triggered as new messages come into the Topic.
+
+👇 You can follow the steps below, or view  this video 👉 [![Video for setting up the SNS Topic](https://img.youtube.com/vi/ZB2Y-fEIYJ0/1.jpg)](https://youtu.be/ZB2Y-fEIYJ0 "Setup the SNS Topic")
 1. Console
 1. SNS
 1. New Topic
 1. Name `awsadvent`
-1. ***Note your topic ARN***
+1. ***Note the topic ARN***
            
 
-1. Go back and twiddle the IAM permissions on the role for the first lambda
+### Add additional permissions to the first lambda
+This permission will allow the first lambda to talk to the SNS Topic. You also need to set an environment variable on the `aws_advent` lambda to have it be able to talk to the SNS Topic. 
+
+👇 You can follow the steps below, or view  this video 👉 [![Adding additional IAM Permissions to the aws_lambda role](https://img.youtube.com/vi/b9cXoz6e8zA/1.jpg)](https://youtu.be/b9cXoz6e8zA "Setup the SNS Topic")
+1. Give additional IAM permissions on the role for the first lambda
      1. Console
      1. IAM
      1. Roles `aws_advent_lambda_dynamo`
+         1. Permissions
+         1. Inline Policies
+         1. click here
+         1. Policy Name
+         1. `aws_advent_lambda_dynamo_snspublish`
 
          ``` javascript
 {
@@ -140,9 +168,31 @@ CloudFormation is pretty well covered by [AWS Advent](http://awsadvent.tumblr.co
       }
    ]
 }
-     ```
 
-## Make the multiplier lambda
+```
+
+
+
+### Add the SNS Topic Arn to the aws_advent lambda
+👇 You can follow the steps below, or view  this video 👉 [![Adding a new environment variable to the lambda](https://img.youtube.com/vi/k_7KnVi9jy8/1.jpg)](https://youtu.be/k_7KnVi9jy8 "Adding a new environment variable to the lambda")
+
+There's a conditional in the `aws_advent` lambda that will publish to a SNS topic, if the SNS_TOPIC_ARN environment variable is set. Set it, and watch more pubsub magic happen.
+
+1. Add the *SNS_TOPIC_ARN* environment variable to the `aws_advent` lambda
+     1. Console
+     1. LAMBDA
+     1. `aws_advent`
+     1. Scroll down
+     1. `SNS_TOPIC_ARN`
+         1. The SNS Topic ARN from above.
+
+### Create a publisher lambda: `aws_advent_sns_multiplier`
+This lambda will subscribe to the SNS Topic, and will get invoked whenever a message comes into the SNS Topic. 
+
+This lambda reads the message sent to the SNS topic, and adds a count of ten to each word in the message.
+
+👇 You can follow the steps below, or view  this video 👉 [![Creating the sns_multiplier lambda](https://img.youtube.com/vi/L4LeoxR5pV4/1.jpg)](https://youtu.be/L4LeoxR5pV4 "Creating the sns multiplier lambda")
+
 1. Console
 1. lambda
 1. Create a Lambda function
@@ -154,7 +204,7 @@ CloudFormation is pretty well covered by [AWS Advent](http://awsadvent.tumblr.co
         1. `awsadvent`
         1. click `enable trigger`
 1. Name
-    1. `aws_advent_sns_multiplier`
+    1. `sns_multiplier`
 1. Runtime
     1. Python 2.7
 1. Code Entry Type
@@ -168,4 +218,50 @@ CloudFormation is pretty well covered by [AWS Advent](http://awsadvent.tumblr.co
    1. Simple Microservice permissions
 1. Next
 1. Create Function
+
+### Go back to slack and test it out. 
+Now that you have the most interesting parts hooked up together, test it out!
+
+What we'd expect to happen is pictured here 👉 ![everything working](img/AWSADVENT_BOT_withsnsmultiplier.png "Everything working")
+
+👇 Writeup is below, or view  this video 👉 [![Creating the sns_multiplier lambda](https://img.youtube.com/vi/e41IDKFO8dI/1.jpg)](https://youtu.be/e41IDKFO8dI "Creating the sns multiplier lambda")
+
+
+* The first time we sent a message, the count of the number of times the words are seen is one. This is provided by our first lambda
+* The second time we sent a message, the count of the number of times the words are seen is twelve. This is a combination of our first and second lambdas working together. 
+     1. The first invocation set the count to `current(0) + one`, and passed the words off to the SNS topic.  The value of each word in the database was set to **1**.
+     2. After SNS recieved the message, it ran the `sns_multiplier` lambda, which added ten to the value of each word `current(1) + 10`. The value of each word in the database was set to **11**.
+     2. The second invocation set the count of each word to `current(11) + 1`.  The value of each word in the database was set to 12.
+
+
+## Now you're doing pubsub microservices
+### Setup the logger lambda as well
+This output of this lambda will be viewable in the CloudWatch Logs console, and it's only showing that we could do something else ( anything else, even ) with this microservice implementation.
+
+1. Console
+1. lambda
+1. Create a Lambda function
+1. Select Blueprint
+        1. search sns
+        1. `sns-message` python2.7 runtime
+1. Configure Triggers
+   1. SNS topic
+        1. `awsadvent`
+        1. click `enable trigger`
+1. Name
+    1. `sns_logger`
+1. Runtime
+    1. Python 2.7
+1. Code Entry Type
+    1. Inline
+        1. It's included as [sns_logger.py](src/sns_logger/sns_logger.py) in this repo.
+1. Handler
+    1. sns_logger.handler
+1. Role
+    1. Create new role from template(s)
+1. Policy Templates
+   1. Simple Microservice permissions
+1. Next
+1. Create Function
+
 
