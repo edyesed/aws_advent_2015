@@ -1,7 +1,7 @@
 # aws_advent_2016
 
 * We're going to make a collection of widgets that count words. It'll be triggered by Slack ( or a `curl` call to AWS API Gateway ).
-* The API Gateway will call a Lambda Function that will 
+* The API Gateway will call a Lambda Function that will split whatever text it is given into specific words
       * A) Upsert a key in a dynamodb table with the number 1
       * B) Drop a message on a SNS Topic
 * The SNS Topic will have two lambdas attached to it that will
@@ -25,7 +25,7 @@ I came into the world of computing by way of *The Operations Path*.  The [Publis
 There are a few things about pubsub that I really appreciate as an "infrastructure person". 
      1. Scalability. In the pubsub pattern, scalability is largely a concern of of the message brokers.  The brokers are ( hopefully ) observable. They have known boundaries of scale and known methods by which capacity or throughput can be modified.  They can handle more volume, or handle the volume they have more effienciently without having to get into code.
      1. Loose Coupling. In the happy path, publishers don't know anything about what subscribers are doing with the messages they publish.  There's admittedly a little hand-waving here, and folks new to pubsub (and sometimes those that are experienced ) get rude suprises as messages mutate over time.
-     1. Asynchronous. This is not necessarily inherent in the pubsub pattern, but it's the most common implementation that I've seen.  There's quite a lot of pressure that can be absent from Dev Teams, Operations Teams, and DevOps Teams when there is no expectation from the business that systems will retain single millisecond response times.
+     1. Asynchronous. This is not necessarily inherent in the pubsub pattern, but it's the most common implementation that I've seen.  There's quite a lot of pressure that can be absent from Dev Teams, Operations Teams, or DevOps Teams when there is no expectation from the business that systems will retain single millisecond response times.
      1. New Cloud Ways. Once upon a time, we needed to queue messages in pubsub systems ( and you might you might still have a need for that feature ), but with Lambda, we can also invoke consumers _on demand_ as messages pass through our system. We don't have necessarily keep things in the queue at all. Message appears, processing code runs, everybody's happy.
 
 # Yo dawg, I heard you like ️☁️
@@ -39,26 +39,17 @@ I would also like to point out that running these things without servers isn't q
 CloudFormation is pretty well covered by [AWS Advent](awsadvent.tumblr.com), we'll configure this little diddy via the AWS console. 
 
 
-# Need to update these things to be DynamoDB Based, and not REDIS based.
-# Need to update these things to be DynamoDB Based, and not REDIS based.
-# Need to update these things to be DynamoDB Based, and not REDIS based.
 ## Get the first lambda setup
-1. Make an ElastiCache REDIS. [![Video to Redis Create](https://i.ytimg.com/vi/TIOo8bTlO7A/hqdefault.jpg)](https://youtu.be/TIOo8bTlO7A "Make an ElastiCache REDIS")
+### Setup the DynamoDB [![Video to DynamoDB Create](https://img.youtube.com/vi/ww3aSExgkRM/1.jpg)](https://youtu.be/ww3aSExgkRM "Make a DynamoDB")
     1. Console
-    1. ElastiCache
-    1. Redis
-        1. Create
-        1. Redis
-        1. Name `aws-advent`
-        1. Node Type `t2.micro`
-        1. Number of replicas None
-        1. Create
-        1. Note the endpoint
-             aws-advent.lkfhzv.0001.usw2.cache.amazonaws.com
-        1. check to be sure the `default` security group is on the box ( needs to be highligted )
+    1. DynamoDB
+    1. Create Table
+        1. Table Name `table`
+        1. Primary Key `word`
+        1. `Create`
 
-
-1. Make the first lambda
+### Setup the First Lambda [![Video to Create the first Lambda](https://img.youtube.com/vi/7gkmqYd6v8w/1.jpg)](https://youtu.be/7gkmqYd6v8w "Make The First Lambda to accept outgoing slack webhooks")
+1. Make the first lambda, which accepts slack outgoing webook input, and saves that in DynamoDB
     1. Console
     1. lambda
     1. Get Started Now
@@ -76,8 +67,10 @@ CloudFormation is pretty well covered by [AWS Advent](awsadvent.tumblr.com), we'
     1. Runtime
         1. Python 2.7
     1. Code Entry Type
-        1. upload a zip file
-        1. It's included as [aws_advent_update_dynamo.zip](src/aws_advent_apigw_dynamo_sns/aws_advent_update_dynamo.zip) in this repo. [More Lambda Packaging Examples here](http://docs.aws.amazon.com/lambda/latest/dg/vpc-ec-deployment-pkg.html)
+        1. Inline
+        1. It's included as [app.py](src/aws_advent_apigw_dynamo_sns/app.py) in this repo. [There are more Lambda Packaging Examples here](http://docs.aws.amazon.com/lambda/latest/dg/vpc-ec-deployment-pkg.html)
+    1. Environment Variables
+        1. `DYNAMO_TABLE` = `table`
     1. Handler
         1. app.handler
     1. Role
@@ -86,14 +79,10 @@ CloudFormation is pretty well covered by [AWS Advent](awsadvent.tumblr.com), we'
         1. Simple Microservice permissions
     1. Triggers
         1. API Gateway
-        1. Note the URL
-    1. Code
-        1. Environment variables
-        1. DYNAMO_TABLE
-            1. The dynamo table name. use `table`
+        1. `save the URL`
 
         
-## Link it to your favorite slack
+### Link it to your favorite slack [![Video for setting up the slack outbound wehbook](https://img.youtube.com/vi/fnt78n2tvak/1.jpg)](https://youtu.be/fnt78n2tvak "Setup the slack outgoing webhook")
 1. Setup an outbound webhook in your favorite slack team.
     1. Manage
     1. search
@@ -109,6 +98,7 @@ CloudFormation is pretty well covered by [AWS Advent](awsadvent.tumblr.com), we'
 1. Go to slack
      1. join the room
      1. say the trigger word
+     1. You should see ![something like this](https://github.com/edyesed/aws_advent_2016/raw/master/img/AWS_Advent_Diagram.png "First post of the awsadvent bot")
 
 
 ## ☝️☝️ CONGRATS YOU JUST DID CHATOPS ☝️☝️
@@ -126,6 +116,9 @@ CloudFormation is pretty well covered by [AWS Advent](awsadvent.tumblr.com), we'
            arn:aws:sns:us-west-2:488887740717:awsadvent
 
     1. Go back and twiddle the IAM permissions on the role for the first lambda
+         1. Console
+         1. IAM
+         1. Roles `aws_advent_lambda_dynamo`
 
              ```
 {

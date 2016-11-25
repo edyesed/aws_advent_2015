@@ -11,7 +11,7 @@ DYNAMO_TABLE = os.environ.get('DYNAMO_TABLE', None)
 #
 def handler(event, context):
     """
-    This function puts into redis and get from it.
+    This function puts into DynamoDB and get from it.
     """
     # xxx print("Started up")
     # xxx print("EVENT")
@@ -31,18 +31,20 @@ def handler(event, context):
     if DYNAMO_TABLE is None:
         return {'statusCode': 200,
                 'headers': {
-                   'x-api-gateway': 'well hidden secret format'
+                   'x-api-gateway': 'well hidden secret format for lambda proxy responses'
                 },
                 'body': json.dumps({'text': 'You need to set the DYNAMO_TABLE env variable on this lambda',
                                     'username': urlparse.parse_qs(parsed.query)['user_name']
                                })
                 }
 
-    client = boto3.client('dynamodb')
+    clieient = boto3.client('dynamodb')
+    return_response = {}t = boto3.client('dynamodb')
     return_response = {}
     # now we save into redis ( or update if it already exists )
     for word in input_text[0].split():
-         response = client.update_item(TableName='table',
+         # xxx print("Checking on %s" % ( word ))
+         response = client.update_item(TableName=DYNAMO_TABLE,
                         Key={'word': {'S':  word}},
                         AttributeUpdates={
                            'count': {"Action": "ADD", "Value": {"N": "1"}}
@@ -51,10 +53,7 @@ def handler(event, context):
          print("RESPONSE IS ")
          print(response)
          return_response[word] = response['Attributes']['count']['N']
-      # xxx print("Checking on %s" % ( word ))
-      # default to zero
     
-
     # 
     # Publish to SNS directly. Lambdas can't run in a VPC and talk to
     # the API Gateway without a NAT Gateway in the VPC, so we're gonna
