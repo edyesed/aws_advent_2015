@@ -1,7 +1,6 @@
 from __future__ import print_function
 import time
 import os
-import redis
 import json
 import urlparse
 import boto3
@@ -10,7 +9,7 @@ DYNAMO_TABLE = os.environ.get('DYNAMO_TABLE', None)
 
 def handler(event, context):
     """
-    This function puts into redis and get from it.
+    This function puts into dynamo and get from it.
     """
     message = event['Records'][0]['Sns']['Message']
 
