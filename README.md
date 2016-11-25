@@ -34,7 +34,9 @@ There are a few things about pubsub that I really appreciate as an "infrastructu
 1. **New Cloud Ways**. Once upon a time, we needed to queue messages in pubsub systems ( and you might you might still have a need for that feature ), but with Lambda, we can also invoke consumers _on demand_ as messages pass through our system. We don't have necessarily keep things in the queue at all. Message appears, processing code runs, everybody's happy.
 
 # Yo dawg, I heard you like ️☁️
-One of the biggest benefits that we can enjoy from being hosted with AWS is *not having to manage stuff*.  Running your own message bus might be something that separates your business from your competition, but it might also be _undifferentiated heavy lifting_.  IMO, if AWS can and will handle scaling issues for you ( to say nothing of only paying for the transactions that you use ), then it might be the right choice for you to let them take care of that for you.
+One of the biggest benefits that we can enjoy from being hosted with AWS is *not having to manage stuff*.  Running your own message bus might be something that separates your business from your competition, but it might also be _undifferentiated heavy lifting_.  
+
+IMO, if AWS can and will handle scaling issues for you ( to say nothing of only paying for the transactions that you use ), then it might be the right choice for you to let them take care of that for you.
 
 I would also like to point out that running these things without servers isn't quite the same thing as running them simply.  I ended up redoing this implementation a few times as I kept finding the rough edges of running things serverless. All were ultimately addressable, but I wanted to keep the complexity of this down somewhat.
 
@@ -42,12 +44,13 @@ I would also like to point out that running these things without servers isn't q
 # WELCOME TO THE FUTURE, FRIENDS
 `TL;DR` GIMMIE SOME EXAMPLES
 
-CloudFormation is pretty well covered by [AWS Advent](awsadvent.tumblr.com), we'll configure this little diddy via the AWS console. 
+CloudFormation is pretty well covered by [AWS Advent](http://awsadvent.tumblr.com), we'll configure this little diddy via the AWS console. 
 
 
 # TO THE ~~BAT~~CODE CAVE! 
 ## Setup the first lambda, which will be linked to an outgoing webhook in slack
-### Setup the DynamoDB [![Video to DynamoDB Create](https://img.youtube.com/vi/ww3aSExgkRM/1.jpg)](https://youtu.be/ww3aSExgkRM "Make a DynamoDB")
+### Setup the DynamoDB 
+1. [![Video to DynamoDB Create](https://img.youtube.com/vi/ww3aSExgkRM/1.jpg)](https://youtu.be/ww3aSExgkRM "Make a DynamoDB")
 1. Console  
 1. DynamoDB
 1. Create Table
