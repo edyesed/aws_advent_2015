@@ -196,6 +196,7 @@ We're using a SNS Topic as a broker. The **producer** ( the `aws_advent` lambda 
 This permission will allow the first lambda to talk to the SNS Topic. You also need to set an environment variable on the `aws_advent` lambda to have it be able to talk to the SNS Topic. 
 
 👇 You can follow the steps below, or view  this video 👉 [![Adding additional IAM Permissions to the aws_lambda role](https://img.youtube.com/vi/b9cXoz6e8zA/1.jpg)](https://youtu.be/b9cXoz6e8zA "Setup the SNS Topic")
+
 1. Give additional IAM permissions on the role for the first lambda
      1. Console
      1. IAM
@@ -206,7 +207,7 @@ This permission will allow the first lambda to talk to the SNS Topic. You also n
          1. Policy Name
          1. `aws_advent_lambda_dynamo_snspublish`
 
-         ``` javascript
+```javascript
 {
    "Version":"2012-10-17",
    "Statement":[{
@@ -273,7 +274,7 @@ Now that you have the most interesting parts hooked up together, test it out!
 
 What we'd expect to happen is pictured here 👉 ![everything working](img/AWSADVENT_BOT_withsnsmultiplier.png "Everything working")
 
-👇 Writeup is below, or view  this video 👉 [![Creating the sns_multiplier lambda](https://img.youtube.com/vi/e41IDKFO8dI/1.jpg)](https://youtu.be/e41IDKFO8dI "Creating the sns multiplier lambda")
+👇 Writeup is below, or view  this video 👉 [![Watch it work](https://img.youtube.com/vi/e41IDKFO8dI/1.jpg)](https://youtu.be/e41IDKFO8dI "Watch it work")
 
 
 * The first time we sent a message, the count of the number of times the words are seen is one. This is provided by our first lambda
