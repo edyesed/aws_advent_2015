@@ -1,11 +1,59 @@
 # aws_advent_2016
 
-* We're going to make a collection of widgets that count words. It'll be triggered by an outgoing wehbook in Slack
+## Intro
+This article will introduce you to creating serverless pubsub microservices by building a simple Slack based word counting service.
 
-* The API Gateway will call a Lambda Function that will split whatever text it is given into specific words
-      * Upsert a key in a dynamodb table with the number 1
+
+## Lambda Overview
+These microservices are [AWS Lambda](https://aws.amazon.com/lambda/) based.  Lambda is service that does not require you to manage servers in order to run code.  The high level overview is that you define events ( called *triggers* ) that will cause a packaging of your code ( called a *function* ) to be invoked.  Inside your package ( aka *function* ), a specific function within a file ( called a *hander* ) will be called. 
+
+If you're feeling a bit confused by terminology that you're familiar with being used to describe something that isn't your mental picture for those words, *you are not alone*. For now, here's the short list:
+
+| Lambda word | More common name | long description |
+| ----- | ---- | ----- |
+| Trigger | AWS Service | Component that is terminating user-input, and causing our lambda to run | 
+| Function | software package |  group of files needed to run some code. Libraries included | 
+| handler | file.function in your package | This is a specific software function inside one file in your package |
+     
+
+There are many different types of triggers ( S3, API Gateway, kinesis streams ).  Lambdas run with a specific [IAM Role](https://aws.amazon.com/iam/faqs/#iam_role_management_anchor). This means that in addition to whatever power is brought to your purpose by your language of choice ( python, nodejs, java, scala ), you can call from your language to other AWS Services ( like DynamoDB ).
+
+
+
+## Intro to these microservices
+
+These microservices are going to count words typed into slack. The services are:
+1. The first service splits up the user-input into individual words.
+   It also adds a count of 1 to each of those words.
+   It also supplies a response to the user showing the current count of any seen words.
+   It acts as a trigger to functions 2 and 3 which will run concurrently.
+   It ends.
+   
+1. The second service also splits up the user-input into individual words.
+   It also adds a count of 10 to each of those words.
+   It ends.
+
+1. The third service logs the input it receives.
+   It ends.
+
+While you might not have a specific need for a word counter, the concepts demonstrated here could be used for other processes.  Say, you need to run several things in series, or perhaps you have a single event that needs to trigger concurrent workflows.
+
+For example:
+     * Concurrent workflows triggered by a single event:
+          * New user joins org, and needs accounts created in several systems
+          * Website user is interested in a specific topic, and you want to curate additional content to present to the user
+          * There is a software outage, and you need to update several system ( statuspage, nagios, etc ) at the same time.
+          * Website Clicks need to be tracked in a system used by Operations, and a different system used by Analytics
+     * Serial workflows triggered by a single event:
+          * New user needs a google account created, then that google account needs to be given permission to access another system integrated with google auth.
+          * A new version of software needs to be packaged, then deployed, then activated
+          * Cup is inserted to a coffee machine, then the coffee machine dispenses coffee into the cup.
+
+
+* The API Gateway ( *trigger* ) will call a Lambda Function that will split whatever text it is given into specific words
+      * Upsert a key in a DynamoDB table with the number 1
       * Drop a message on a SNS Topic
-* The SNS Topic will have two lambdas attached to it that will
+* The SNS Topic ( *trigger* ) will have two lambda functions attached to it that will
       * upsert the same keys in the dynamodb with the number 10
       * log a message to CloudWatchLogs
 
@@ -186,10 +234,11 @@ There's a conditional in the `aws_advent` lambda that will publish to a SNS topi
      1. `SNS_TOPIC_ARN`
          1. The SNS Topic ARN from above.
 
-### Create a publisher lambda: `aws_advent_sns_multiplier`
-This lambda will subscribe to the SNS Topic, and will get invoked whenever a message comes into the SNS Topic. 
+### Create a consumer lambda: `aws_advent_sns_multiplier`
+This microservice increases the values collected by the `aws_advent` lambda. In a real world application, I would probably not take the approach of hanving a second lambda function update values in a database that are originally input by another lambda function. *It's useful here to show how work can be done outside of the Request->Response flow for a request.*  A less contrived example might be that this lambda checks for words with high counts, to build a leaderboard of words.
 
-This lambda reads the message sent to the SNS topic, and adds a count of ten to each word in the message.
+This lambda function will subscribe to the SNS Topic, and it is *triggered* when a message is delivered to the SNS Topic.  In the real world, this lambda might do something like copy data to a secondary database that internal users can query without impacting the user experience. 
+
 
 👇 You can follow the steps below, or view  this video 👉 [![Creating the sns_multiplier lambda](https://img.youtube.com/vi/L4LeoxR5pV4/1.jpg)](https://youtu.be/L4LeoxR5pV4 "Creating the sns multiplier lambda")
 
@@ -265,3 +314,34 @@ This output of this lambda will be viewable in the CloudWatch Logs console, and 
 1. Create Function
 
 
+# In conclusion
+PubSub is an awsome model for some types of work, and in AWS with Lambda we can work inside this model relatively simply.  Plenty of real-word work depends on the pub-sub model. 
+
+You might translate this project to things that you do need to do like software deployment, user account management, building leaderboards, etc.
+
+## AWS + Lambda == the happy path
+*It's ok to lean on AWS for the heavy lifting.* As our word counter becomes more popular, we probably won't have to do anything at all to scale with traffic.  Having our code execute on a request driven basis is a big win from my point of view.  "Serverless" computing is a very interesting development in cloud computing.  Look for ways to experiement with it, there are benefits to it ( other than novelty ).
+
+Some benefits you can enjoy via Servless PubSub in AWS:
+1. Scaling the publishers.
+   Since this used API Gateway to terminate user requests to a Lambda function:
+      1. You don't have idle resources burning money, waiting for traffic
+      1. You don't have to scale because traffic has increased or decreased
+1. Scaling the bus / interconnection.
+   SNS did the following for you:
+      1. Scaled to accomodate the volume of traffic we send to it
+      1. Provided HA for the bus
+      1. Pay-per-transaction. You don't have to pay for idle resources!
+1. Scaling the consumers.
+   Having lambda functions that *trigger* on a message being delivered to SNS
+      1. Scaled the lambda invocations to the volume of traffic.
+      1. Provides some sense of HA 
+
+## Lambda and the API Gateway are works in progress.
+Lambda is a new technology. If you use it, you will find some rough edges.
+
+The API Gateway is a new technology. If you use it, you will find some rough edges.
+
+Don't let that dissuade you from trying them out!
+
+I'm open for further discussion on these topics. Find me on twitter [@edyesed](https://twitter.com/edyesed)
