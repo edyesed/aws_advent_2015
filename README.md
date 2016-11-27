@@ -219,9 +219,7 @@ This permission will allow the first lambda to talk to the SNS Topic. You also n
       }
    ]
 }
-         ```
-
-
+```
 
 ### Add the SNS Topic Arn to the aws_advent lambda
 👇 You can follow the steps below, or view  this video 👉 [![Adding a new environment variable to the lambda](https://img.youtube.com/vi/k_7KnVi9jy8/1.jpg)](https://youtu.be/k_7KnVi9jy8 "Adding a new environment variable to the lambda")
