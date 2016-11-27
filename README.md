@@ -324,6 +324,7 @@ You might translate this project to things that you do need to do like software 
 *It's ok to lean on AWS for the heavy lifting.* As our word counter becomes more popular, we probably won't have to do anything at all to scale with traffic.  Having our code execute on a request driven basis is a big win from my point of view.  "Serverless" computing is a very interesting development in cloud computing.  Look for ways to experiement with it, there are benefits to it ( other than novelty ).
 
 Some benefits you can enjoy via Servless PubSub in AWS:
+
 1. Scaling the publishers.
    Since this used API Gateway to terminate user requests to a Lambda function:
       1. You don't have idle resources burning money, waiting for traffic
