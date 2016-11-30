@@ -1,7 +1,7 @@
 # aws_advent_2016
 
 ## Intro
-This article will introduce you to creating serverless PubSub microservices by building a simple Slackbased word counting service.
+This article will introduce you to creating serverless PubSub microservices by building a simple Slack based word counting service.
 
 
 ## Lambda Overview
